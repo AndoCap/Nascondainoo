@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Nascondino GPS</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+#map{
+height:85vh;
+}
+
+button{
+font-size:20px;
+padding:10px;
+margin:10px;
+}
+
+#link{
+font-size:18px;
+word-break:break-all;
+}
+</style>
+
+</head>
+
+<body>
+
+<button onclick="generate()">Genera Cerchio</button>
+
+<div id="link"></div>
+
+<div id="map"></div>
+
+<script>
+
+var map = L.map('map').setView([45.49,12.24],13)
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+maxZoom:19
+}).addTo(map)
+
+
+function randomCircle(lat,lon,radius){
+
+const r = radius/111300
+
+const u = Math.random()
+const v = Math.random()
+
+const w = r*Math.sqrt(u)
+const t = 2*Math.PI*v
+
+const newLat = lat + w*Math.cos(t)
+const newLon = lon + w*Math.sin(t)
+
+return [newLat,newLon]
+
+}
+
+
+function generate(){
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+let lat = pos.coords.latitude
+let lon = pos.coords.longitude
+
+let fake = randomCircle(lat,lon,200)
+
+let link =
+location.origin +
+location.pathname +
+"?lat="+fake[0]+
+"&lon="+fake[1]+
+"&r=200"
+
+document.getElementById("link").innerText = link
+
+draw(fake[0],fake[1],200)
+
+})
+
+}
+
+
+function draw(lat,lon,r){
+
+map.setView([lat,lon],15)
+
+L.circle([lat,lon],{
+radius:r,
+color:"red"
+}).addTo(map)
+
+}
+
+
+const params = new URLSearchParams(window.location.search)
+
+if(params.get("lat")){
+
+draw(
+parseFloat(params.get("lat")),
+parseFloat(params.get("lon")),
+parseFloat(params.get("r"))
+)
+
+}
+
+</script>
+
+</body>
+</html>
